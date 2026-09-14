@@ -1,0 +1,48 @@
+name: meeo
+description: "A new Flutter project."
+publish_to: "none" # Prevent accidental publishing to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.1
+
+# Application dependencies
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  go_router: ^18.0.1
+  dio: ^5.11.1
+  flutter_riverpod: ^3.4.3
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.12.0
+  riverpod_annotation: ^4.0.7
+  carousel_slider: ^5.0.0 # Use the latest version
+
+# Development dependencies
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+  freezed: ^4.0.1
+  json_serializable: ^6.14.1
+  build_runner: ^2.16.1
+  mocktail: ^1.0.5
+  riverpod_generator: ^4.0.9
+
+# Flutter configuration
+flutter:
+  uses-material-design: true
+
+  # App assets
+  assets:
+    - assets/images/
+
+# App launcher icon configuration
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo/app_logo.png"
+  min_sdk_android: 21

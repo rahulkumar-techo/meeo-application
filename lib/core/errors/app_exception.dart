@@ -1,0 +1,4 @@
+// NetworkException
+// ServerException
+// AuthenticationException
+// CacheException
