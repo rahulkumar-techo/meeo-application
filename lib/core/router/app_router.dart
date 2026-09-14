@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:meeo/core/router/route_names.dart';
+import 'package:meeo/features/cart/presentations/pages/cart_page.dart';
 import 'package:meeo/features/products/data/models/product_model.dart';
 import 'package:meeo/features/products/presentation/pages/product_details.dart';
 import 'package:meeo/features/products/presentation/pages/products_page.dart';
@@ -39,6 +40,13 @@ final GoRouter appRouter = GoRouter(
           );
         }
         return const ProductDetailsPage();
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.cart,
+      name: AppRoutes.cartName,
+      builder: (BuildContext context, GoRouterState state) {
+        return const CartPage();
       },
     ),
   ],

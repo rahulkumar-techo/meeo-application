@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:meeo/core/router/route_names.dart';
 import 'package:meeo/core/theme/app_colors.dart';
 import 'package:meeo/core/theme/app_text_styles.dart';
+import 'package:meeo/features/cart/presentations/provider/cart_lists.dart';
 import 'package:meeo/features/products/data/models/product_model.dart';
 import 'package:meeo/features/products/presentation/provider/product_provider.dart';
 import 'package:meeo/features/products/presentation/weidgets/home_header.dart';
@@ -143,12 +144,29 @@ class _ProductsPageState extends ConsumerState<ProductsPage> {
                     ),
                     onPressed: () {},
                   ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.shopping_bag_outlined,
-                      color: AppColors.textPrimary,
-                    ),
-                    onPressed: () {},
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final cartAsync = ref.watch(cartListsProvider);
+                      final int totalCount = cartAsync.maybeWhen(
+                        data: (res) => res.data?.totalItemsCount ?? 0,
+                        orElse: () => 0,
+                      );
+
+                      return IconButton(
+                        icon: Badge(
+                          isLabelVisible: totalCount > 0,
+                          label: Text('$totalCount'),
+                          backgroundColor: AppColors.primaryColor,
+                          child: const Icon(
+                            Icons.shopping_bag_outlined,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        onPressed: () {
+                          context.push(AppRoutes.cart);
+                        },
+                      );
+                    },
                   ),
                   const SizedBox(width: 8),
                 ],

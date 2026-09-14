@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:meeo/core/router/route_names.dart';
 import 'package:meeo/core/theme/app_colors.dart';
 import 'package:meeo/core/theme/app_text_styles.dart';
+import 'package:meeo/features/cart/presentations/provider/cart_controller.dart';
+import 'package:meeo/features/cart/presentations/provider/cart_lists.dart';
 import 'package:meeo/features/products/data/models/product_model.dart';
 import 'package:meeo/features/products/presentation/provider/product_details_provider.dart';
 
@@ -208,6 +212,30 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                           color: AppColors.textPrimary,
                         ),
                         onPressed: () {},
+                      ),
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final cartAsync = ref.watch(cartListsProvider);
+                          final int totalCount = cartAsync.maybeWhen(
+                            data: (res) => res.data?.totalItemsCount ?? 0,
+                            orElse: () => 0,
+                          );
+
+                          return IconButton(
+                            icon: Badge(
+                              isLabelVisible: totalCount > 0,
+                              label: Text('$totalCount'),
+                              backgroundColor: AppColors.primaryColor,
+                              child: const Icon(
+                                Icons.shopping_bag_outlined,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            onPressed: () {
+                              context.push(AppRoutes.cart);
+                            },
+                          );
+                        },
                       ),
                       const SizedBox(width: 8),
                     ],
@@ -416,7 +444,7 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
             ),
 
             // Bottom Action Bar
-            _buildBottomActionBar(currentPrice),
+            _buildBottomActionBar(currentPrice, selectedVariant, product),
           ],
         ),
       ),
@@ -522,7 +550,15 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
   }
 
   /// BottomAction
-  Widget _buildBottomActionBar(double price) {
+  Widget _buildBottomActionBar(
+    double price,
+    ProductVariantModel? selectedVariant,
+    ProductModel product,
+  ) {
+    final cartState = ref.watch(cartControllerProvider);
+    final String? variantId = selectedVariant?.id ??
+        (product.variants.isNotEmpty ? product.variants.first.id : null);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -547,15 +583,45 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: () {},
-              child: const Text(
-                'Add to Cart',
-                style: TextStyle(
-                  color: AppColors.primaryColor,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                ),
-              ),
+              onPressed: (cartState.isGlobalLoading || variantId == null)
+                  ? null
+                  : () async {
+                      final success = await ref
+                          .read(cartControllerProvider.notifier)
+                          .addToCart(
+                            variantId: variantId,
+                            quantity: 1,
+                          );
+                      if (mounted && success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Item added to cart!'),
+                            action: SnackBarAction(
+                              label: 'View Cart',
+                              textColor: AppColors.white,
+                              onPressed: () => context.push(AppRoutes.cart),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+              child: cartState.isGlobalLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.primaryColor,
+                      ),
+                    )
+                  : const Text(
+                      'Add to Cart',
+                      style: TextStyle(
+                        color: AppColors.primaryColor,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 12),
@@ -569,7 +635,19 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: () {},
+              onPressed: variantId == null
+                  ? null
+                  : () async {
+                      await ref
+                          .read(cartControllerProvider.notifier)
+                          .addToCart(
+                            variantId: variantId,
+                            quantity: 1,
+                          );
+                      if (mounted) {
+                        context.push(AppRoutes.cart);
+                      }
+                    },
               child: const Text(
                 'Buy Now',
                 style: TextStyle(
